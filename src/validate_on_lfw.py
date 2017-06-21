@@ -33,10 +33,10 @@ import tensorflow as tf
 import numpy as np
 import argparse
 import facenet
-import lfw
 import os
 import sys
 import math
+import lfw
 from sklearn import metrics
 from scipy.optimize import brentq
 from scipy import interpolate
@@ -78,7 +78,10 @@ def main(args):
                 images = facenet.load_data(paths_batch, False, False, image_size)
                 feed_dict = { images_placeholder:images, phase_train_placeholder:False }
                 emb_array[start_index:end_index,:] = sess.run(embeddings, feed_dict=feed_dict)
-        
+            
+            np.save('embs', emb_array)
+            np.save('paths', paths)
+            
             tpr, fpr, accuracy, val, val_std, far = lfw.evaluate(emb_array, 
                 actual_issame, nrof_folds=args.lfw_nrof_folds)
 
@@ -93,20 +96,13 @@ def main(args):
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
     
-    parser.add_argument('lfw_dir', type=str,
-        help='Path to the data directory containing aligned LFW face patches.')
-    parser.add_argument('--lfw_batch_size', type=int,
-        help='Number of images to process in a batch in the LFW test set.', default=100)
-    parser.add_argument('model', type=str, 
-        help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file')
-    parser.add_argument('--image_size', type=int,
-        help='Image size (height, width) in pixels.', default=160)
-    parser.add_argument('--lfw_pairs', type=str,
-        help='The file containing the pairs to use for validation.', default='data/pairs.txt')
-    parser.add_argument('--lfw_file_ext', type=str,
-        help='The file extension for the LFW dataset.', default='png', choices=['jpg', 'png'])
-    parser.add_argument('--lfw_nrof_folds', type=int,
-        help='Number of folds to use for cross validation. Mainly used for testing.', default=10)
+    parser.add_argument('lfw_dir', type=str, help='Path to the data directory containing aligned LFW face patches.')
+    parser.add_argument('--lfw_batch_size', type=int, help='Number of images to process in a batch in the LFW test set.', default=100)
+    parser.add_argument('model', type=str,  help='Could be either a directory containing the meta_file and ckpt_file or a model protobuf (.pb) file')
+    parser.add_argument('--image_size', type=int, help='Image size (height, width) in pixels.', default=160)
+    parser.add_argument('--lfw_pairs', type=str, help='The file containing the pairs to use for validation.', default='data/pairs.txt')
+    parser.add_argument('--lfw_file_ext', type=str, help='The file extension for the LFW dataset.', default='png', choices=['jpg', 'png'])
+    parser.add_argument('--lfw_nrof_folds', type=int, help='Number of folds to use for cross validation. Mainly used for testing.', default=10)
     return parser.parse_args(argv)
 
 if __name__ == '__main__':

@@ -41,6 +41,7 @@ def main(args):
     output_dir = os.path.expanduser(args.output_dir)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
+    
     # Store some git revision info in a text file in the log directory
     src_path,_ = os.path.split(os.path.realpath(__file__))
     facenet.store_revision_info(src_path, output_dir, ' '.join(sys.argv))
@@ -49,7 +50,10 @@ def main(args):
     print('Creating networks and loading parameters')
     
     with tf.Graph().as_default():
-        gpu_options = tf.GPUOptions(per_process_gpu_memory_fraction=args.gpu_memory_fraction)
+        gpu_options = tf.GPUOptions(
+            per_process_gpu_memory_fraction=args.gpu_memory_fraction,
+            visible_device_list=args.gpu_id,
+        )
         sess = tf.Session(config=tf.ConfigProto(gpu_options=gpu_options, log_device_placement=False))
         with sess.as_default():
             pnet, rnet, onet = align.detect_face.create_mtcnn(sess, None)
@@ -67,6 +71,7 @@ def main(args):
         nrof_successfully_aligned = 0
         if args.random_order:
             random.shuffle(dataset)
+        
         for cls in dataset:
             output_class_dir = os.path.join(output_dir, cls.name)
             if not os.path.exists(output_class_dir):
@@ -95,7 +100,7 @@ def main(args):
     
                         bounding_boxes, _ = align.detect_face.detect_face(img, minsize, pnet, rnet, onet, threshold, factor)
                         nrof_faces = bounding_boxes.shape[0]
-                        if nrof_faces>0:
+                        if nrof_faces > 0:
                             det = bounding_boxes[:,0:4]
                             img_size = np.asarray(img.shape)[0:2]
                             if nrof_faces>1:
@@ -105,6 +110,7 @@ def main(args):
                                 offset_dist_squared = np.sum(np.power(offsets,2.0),0)
                                 index = np.argmax(bounding_box_size-offset_dist_squared*2.0) # some extra weight on the centering
                                 det = det[index,:]
+                            
                             det = np.squeeze(det)
                             bb = np.zeros(4, dtype=np.int32)
                             bb[0] = np.maximum(det[0]-args.margin/2, 0)
@@ -126,17 +132,13 @@ def main(args):
 
 def parse_arguments(argv):
     parser = argparse.ArgumentParser()
-    
     parser.add_argument('input_dir', type=str, help='Directory with unaligned images.')
     parser.add_argument('output_dir', type=str, help='Directory with aligned face thumbnails.')
-    parser.add_argument('--image_size', type=int,
-        help='Image size (height, width) in pixels.', default=182)
-    parser.add_argument('--margin', type=int,
-        help='Margin for the crop around the bounding box (height, width) in pixels.', default=44)
-    parser.add_argument('--random_order', 
-        help='Shuffles the order of images to enable alignment using multiple processes.', action='store_true')
-    parser.add_argument('--gpu_memory_fraction', type=float,
-        help='Upper bound on the amount of GPU memory that will be used by the process.', default=1.0)
+    parser.add_argument('--image_size', type=int, help='Image size (height, width) in pixels.', default=182)
+    parser.add_argument('--margin', type=int, help='Margin for the crop around the bounding box (height, width) in pixels.', default=44)
+    parser.add_argument('--random_order',  help='Shuffles the order of images to enable alignment using multiple processes.', action='store_true')
+    parser.add_argument('--gpu_memory_fraction', type=float, help='Upper bound on the amount of GPU memory that will be used by the process.', default=1.0)
+    parser.add_argument('--gpu-id', type=str, default='0')
     return parser.parse_args(argv)
 
 if __name__ == '__main__':
