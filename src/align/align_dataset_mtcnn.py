@@ -138,7 +138,7 @@ def parse_arguments(argv):
     parser.add_argument('--margin', type=int, help='Margin for the crop around the bounding box (height, width) in pixels.', default=44)
     parser.add_argument('--random_order',  help='Shuffles the order of images to enable alignment using multiple processes.', action='store_true')
     parser.add_argument('--gpu_memory_fraction', type=float, help='Upper bound on the amount of GPU memory that will be used by the process.', default=1.0)
-    parser.add_argument('--gpu-id', type=str, default='0')
+    parser.add_argument('--gpu-id', type=str, default='1')
     return parser.parse_args(argv)
 
 if __name__ == '__main__':

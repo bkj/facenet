@@ -15,15 +15,6 @@ import tensorflow as tf
 
 from PIL import Image
 
-from keras import backend as K
-def limit_mem():
-    cfg = K.tf.ConfigProto()
-    cfg.gpu_options.allow_growth = True
-    cfg.gpu_options.visible_device_list="0"
-    K.set_session(K.tf.Session(config=cfg))
-
-limit_mem()
-
 # --
 # Helpers
 
@@ -77,7 +68,7 @@ def load_img(path, bottleneck_dim=None, target_dim=160):
 
 def parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model', type=str, default='./models/20170512-110547')
+    parser.add_argument('--model', type=str, default='./models/20170625-102052')
     parser.add_argument('--batch-size', type=int, default=100)
     parser.add_argument('--bottleneck-dim', type=int, default=-1)
     parser.add_argument('--gpu', type=int, default=0)

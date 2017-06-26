@@ -26,6 +26,7 @@ python src/validate_on_lfw.py /home/bjohnson/data/lfw/train/lfw-aligned-160/ ./m
 
 find ./data/lfw/mtcnnpy_160/ -type f | fgrep png | ./src/simple-run.py --model ./models/20170512-110547 > feats
 
+
 # --
 # Instagram face embeddings
 
